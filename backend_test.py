@@ -328,6 +328,68 @@ class CredEatAPITester:
             token=self.admin_token
         )[0]
 
+    def test_vendor_wallet_balance(self):
+        """Test getting vendor wallet balance"""
+        return self.run_test(
+            "Get Vendor Wallet Balance",
+            "GET",
+            "wallet/",
+            200,
+            token=self.vendor_token
+        )[0]
+
+    def test_vendor_withdrawal(self):
+        """Test vendor withdrawal functionality"""
+        # First check if vendor has balance
+        success, wallet_data = self.run_test(
+            "Check Vendor Balance Before Withdrawal",
+            "GET",
+            "wallet/",
+            200,
+            token=self.vendor_token
+        )
+        
+        if not success:
+            return False
+            
+        balance = wallet_data.get('balance', 0)
+        print(f"   Vendor balance: ₹{balance}")
+        
+        if balance <= 0:
+            print("   No balance to withdraw, testing error case...")
+            # Test withdrawal with no balance (should fail)
+            success, _ = self.run_test(
+                "Vendor Withdrawal (No Balance)",
+                "POST",
+                "wallet/withdraw",
+                400,  # Expecting 400 for insufficient funds
+                data={"amount": 10.0},
+                token=self.vendor_token
+            )
+            return success
+        else:
+            # Test successful withdrawal
+            withdrawal_amount = min(balance, 50.0)  # Withdraw up to 50 or available balance
+            success, _ = self.run_test(
+                "Vendor Withdrawal (Success)",
+                "POST",
+                "wallet/withdraw",
+                200,
+                data={"amount": withdrawal_amount},
+                token=self.vendor_token
+            )
+            return success
+
+    def test_admin_monthly_stats(self):
+        """Test admin monthly statistics endpoint"""
+        return self.run_test(
+            "Admin Monthly Statistics",
+            "GET",
+            "analytics/monthly",
+            200,
+            token=self.admin_token
+        )[0]
+
 def main():
     print("🚀 Starting CredEat API Testing...")
     tester = CredEatAPITester()
