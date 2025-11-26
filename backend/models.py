@@ -60,7 +60,7 @@ class Transaction(BaseModel):
     sender_id: str
     receiver_id: Optional[str] = None
     amount: float
-    type: Literal["skip_credit", "vendor_payment", "admin_adjustment"]
+    type: Literal["skip_credit", "vendor_payment", "admin_adjustment", "withdrawal"] # Added withdrawal
     description: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

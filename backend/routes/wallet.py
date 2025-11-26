@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
-from typing import List
 from database import db
 from models import Transaction, UserResponse
 from dependencies import get_current_user
 from datetime import datetime, timezone
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/wallet", tags=["wallet"])
 
@@ -22,10 +22,6 @@ async def get_wallet(current_user: UserResponse = Depends(get_current_user)):
         "transactions": transactions
     }
 
-class TransferRequest(Transaction):
-    pass # We'll use a subset actually but for speed reusing
-
-from pydantic import BaseModel
 class PayVendorRequest(BaseModel):
     vendor_id: str
     amount: float
@@ -41,8 +37,8 @@ async def pay_vendor(req: PayVendorRequest, current_user: UserResponse = Depends
         raise HTTPException(status_code=400, detail="Insufficient funds")
         
     # Check vendor
-    vendor = await db.users.find_one({"id": req.vendor_id}) # Assuming we search by our custom ID
-    if not vendor: # or vendor['role'] != 'vendor': # Optional strict check
+    vendor = await db.users.find_one({"id": req.vendor_id})
+    if not vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
         
     # Execute Transfer
@@ -71,3 +67,39 @@ async def pay_vendor(req: PayVendorRequest, current_user: UserResponse = Depends
     await db.transactions.insert_one(tx_dict)
     
     return {"status": "success", "transaction_id": tx.id}
+
+class WithdrawRequest(BaseModel):
+    amount: float
+
+@router.post("/withdraw")
+async def withdraw_funds(req: WithdrawRequest, current_user: UserResponse = Depends(get_current_user)):
+    if current_user.role != "vendor":
+        raise HTTPException(status_code=403, detail="Only vendors can withdraw funds")
+        
+    if req.amount <= 0:
+        raise HTTPException(status_code=400, detail="Invalid amount")
+        
+    # Check balance
+    user = await db.users.find_one({"email": current_user.email})
+    if user['wallet_balance'] < req.amount:
+        raise HTTPException(status_code=400, detail="Insufficient funds")
+        
+    # Deduct from vendor
+    await db.users.update_one(
+        {"email": current_user.email},
+        {"$inc": {"wallet_balance": -req.amount}}
+    )
+    
+    # Log Transaction
+    tx = Transaction(
+        sender_id=current_user.id,
+        receiver_id="SYSTEM", # Sending back to system/bank
+        amount=req.amount,
+        type="withdrawal", # New type
+        description=f"Weekly Withdrawal Request"
+    )
+    tx_dict = tx.model_dump()
+    tx_dict['timestamp'] = tx_dict['timestamp'].isoformat()
+    await db.transactions.insert_one(tx_dict)
+    
+    return {"status": "success", "transaction_id": tx.id, "message": "Withdrawal processed successfully"}
