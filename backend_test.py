@@ -78,54 +78,103 @@ class CredEatAPITester:
 
     def test_student_login(self):
         """Test student login"""
-        login_data = {
-            "email": "student@test.com",
+        # OAuth2PasswordRequestForm expects form data
+        url = f"{self.base_url}/api/auth/login"
+        data = {
+            "username": "student@test.com",
             "password": "pass123"
         }
-        success, response = self.run_test(
-            "Student Login",
-            "POST",
-            "auth/login",
-            200,
-            data=login_data
-        )
-        if success and 'access_token' in response:
-            self.student_token = response['access_token']
-        return success
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Student Login...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.post(url, data=data)  # Use data instead of json
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_json = response.json()
+                if 'access_token' in response_json:
+                    self.student_token = response_json['access_token']
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"   Response: {response.json()}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_admin_login(self):
         """Test admin login"""
-        login_data = {
-            "email": "admin@credeat.com",
+        url = f"{self.base_url}/api/auth/login"
+        data = {
+            "username": "admin@credeat.com",
             "password": "admin123"
         }
-        success, response = self.run_test(
-            "Admin Login",
-            "POST",
-            "auth/login",
-            200,
-            data=login_data
-        )
-        if success and 'access_token' in response:
-            self.admin_token = response['access_token']
-        return success
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Admin Login...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.post(url, data=data)
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_json = response.json()
+                if 'access_token' in response_json:
+                    self.admin_token = response_json['access_token']
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"   Response: {response.json()}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_vendor_login(self):
         """Test vendor login"""
-        login_data = {
-            "email": "vendor@credeat.com",
+        url = f"{self.base_url}/api/auth/login"
+        data = {
+            "username": "vendor@credeat.com",
             "password": "vendor123"
         }
-        success, response = self.run_test(
-            "Vendor Login",
-            "POST",
-            "auth/login",
-            200,
-            data=login_data
-        )
-        if success and 'access_token' in response:
-            self.vendor_token = response['access_token']
-        return success
+        
+        self.tests_run += 1
+        print(f"\n🔍 Testing Vendor Login...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.post(url, data=data)
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_json = response.json()
+                if 'access_token' in response_json:
+                    self.vendor_token = response_json['access_token']
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"   Response: {response.json()}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_get_meals(self):
         """Test getting meals"""
