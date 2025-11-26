@@ -409,6 +409,9 @@ def main():
         ("Submit Complaint", tester.test_submit_complaint),
         ("Get Complaints (Admin)", tester.test_get_complaints_admin),
         ("Analytics Dashboard", tester.test_analytics_dashboard),
+        ("Vendor Wallet Balance", tester.test_vendor_wallet_balance),
+        ("Vendor Withdrawal", tester.test_vendor_withdrawal),
+        ("Admin Monthly Stats", tester.test_admin_monthly_stats),
     ]
 
     failed_tests = []
