@@ -59,8 +59,9 @@ class CredEatAPITester:
 
     def test_student_registration(self):
         """Test student registration"""
+        timestamp = datetime.now().strftime("%H%M%S")
         student_data = {
-            "email": "student@test.com",
+            "email": f"student{timestamp}@test.com",
             "password": "pass123",
             "full_name": "Test Student",
             "role": "student"
