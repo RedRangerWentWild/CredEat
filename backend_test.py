@@ -303,7 +303,7 @@ class CredEatAPITester:
         return self.run_test(
             "Analytics Dashboard",
             "GET",
-            "analytics/dashboard",
+            "analytics/wastage",
             200,
             token=self.admin_token
         )[0]
