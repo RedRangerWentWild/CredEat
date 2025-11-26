@@ -2,8 +2,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from database import db
-from models import UserResponse
-from auth_utils import SECRET_KEY, ALGORITHM, TokenData
+from auth_utils import SECRET_KEY, ALGORITHM
+from models import UserResponse, TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
