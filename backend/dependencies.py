@@ -26,8 +26,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     if user is None:
         raise credentials_exception
         
-    # Convert _id to id for Pydantic model
-    user['id'] = str(user.pop('_id'))
+    # Remove _id if present, as we use 'id' (UUID)
+    if '_id' in user:
+        del user['_id']
     return UserResponse(**user)
 
 async def get_current_active_user(current_user: UserResponse = Depends(get_current_user)):
