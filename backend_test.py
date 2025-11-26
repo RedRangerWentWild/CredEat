@@ -275,18 +275,37 @@ class CredEatAPITester:
 
     def test_submit_complaint(self):
         """Test submitting a complaint"""
-        complaint_data = {
-            "category": "quality",
-            "description": "Test complaint - food quality issue"
-        }
-        return self.run_test(
-            "Submit Complaint",
-            "POST",
-            "complaints/",
-            201,
-            data=complaint_data,
-            token=self.student_token
-        )[0]
+        # Complaints endpoint expects form data
+        url = f"{self.base_url}/api/complaints/"
+        headers = {}
+        if self.student_token:
+            headers['Authorization'] = f'Bearer {self.student_token}'
+
+        self.tests_run += 1
+        print(f"\n🔍 Testing Submit Complaint...")
+        print(f"   URL: {url}")
+        
+        try:
+            data = {
+                "category": "quality",
+                "description": "Test complaint - food quality issue"
+            }
+            response = requests.post(url, data=data, headers=headers)
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                try:
+                    print(f"   Response: {response.json()}")
+                except:
+                    print(f"   Response: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_get_complaints_admin(self):
         """Test getting complaints as admin"""
